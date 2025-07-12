@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        .chart-box {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+        }
+        .stat-box {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        a:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📊 Admin Analytics Dashboard</h2>
+
+    <div class="charts-container">
+
+        <!-- Top Skills Chart -->
+        <div class="chart-box">
+            <h3>Top 5 Offered Skills</h3>
+            <canvas id="skillsChart"></canvas>
+        </div>
+
+        <!-- Location Pie Chart -->
+        <div class="chart-box">
+            <h3>User Locations</h3>
+            <canvas id="locationChart"></canvas>
+        </div>
+
+        <!-- Public vs Private Chart -->
+        <div class="chart-box">
+            <h3>Public vs Private Profiles</h3>
+            <canvas id="visibilityChart"></canvas>
+        </div>
+
+        <!-- Banned Users Count -->
+        <div class="chart-box">
+            <h3>Total Banned Users</h3>
+            <div class="stat-box">{{ banned_count }}</div>
+        </div>
+    </div>
+
+    <div style="text-align:center;">
+        <a href="{{ url_for('admin_dashboard') }}">← Back to Admin Dashboard</a>
+    </div>
+
+    <script>
+        const skillLabels = {{ top_skills | map(attribute=0) | list | tojson }};
+        const skillCounts = {{ top_skills | map(attribute=1) | list | tojson }};
+        const locationLabels = {{ location_data.keys() | list | tojson }};
+        const locationCounts = {{ location_data.values() | list | tojson }};
+        const publicCount = {{ public_count }};
+        const privateCount = {{ private_count }};
+
+        new Chart(document.getElementById('skillsChart'), {
+            type: 'bar',
+            data: {
+                labels: skillLabels,
+                datasets: [{
+                    label: 'Users Offering',
+                    data: skillCounts,
+                    backgroundColor: '#36a2eb',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        new Chart(document.getElementById('locationChart'), {
+            type: 'pie',
+            data: {
+                labels: locationLabels,
+                datasets: [{
+                    data: locationCounts,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        new Chart(document.getElementById('visibilityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Public', 'Private'],
+                datasets: [{
+                    data: [publicCount, privateCount],
+                    backgroundColor: ['#28a745', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+</body>
+</html>
